@@ -52,7 +52,7 @@ class TestDataPipeline(unittest.TestCase):
         logger.info('test for avg_trip_length method started')
         self.assertIsNotNone(self.avg_trip)
         self.assertIsInstance(self.avg_trip, float)
-        self.assertEqual((round(self.avg_trip, 3)), 2.742)
+        self.assertEqual((round(self.avg_trip, 3)), 3.342)
         logger.info('test for avg_trip_length method finished')
 
     def test_rolling_mean(self):
