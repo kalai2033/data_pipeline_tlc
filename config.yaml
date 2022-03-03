@@ -1,0 +1,14 @@
+DEFAULT_LOGGING_PATH: "../tests/pipeline.log"
+TEST_LOGGING_PATH: "../tests/unittest.log"
+DEFAULT_LOGGING_FORMAT: '%(asctime)s : %(levelname)s : %(name)s : %(message)s'
+DATASET_URL: 'https://s3.amazonaws.com/nyc-tlc/trip+data/yellow_tripdata'
+SCHEMA: {'trip_distance': 'float64', 'PULocationID': 'uint16', 'DOLocationID': 'uint16',
+         'store_and_fwd_flag': 'str', 'fare_amount': 'float64', 'extra': 'float64', 'mta_tax': 'float64',
+         'tip_amount': 'float64', 'tolls_amount': 'float64', 'improvement_surcharge': 'float64',
+         'total_amount': 'float64', 'congestion_surcharge': 'float64', 'RatecodeID': 'uint8',
+         'VendorID': 'uint8', 'passenger_count': 'uint8', 'payment_type': 'uint8'}
+DATE_FIELDS: ['tpep_pickup_datetime', 'tpep_dropoff_datetime']
+DATASET_YEAR: [2021]
+DATASET_MONTH: ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12']
+TEST_DATA_URL: 'https://s3.amazonaws.com/nyc-tlc/trip+data/yellow_tripdata_2021-01.csv'
+TEST_DATASET_PATH: '../data/yellow_tripdata_2021-01.csv'

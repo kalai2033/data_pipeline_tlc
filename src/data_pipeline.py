@@ -2,42 +2,55 @@ import logging
 import os
 import dask.dataframe as dd
 from dask.diagnostics import ProgressBar
-from settings import constants
 import calendar
+import yaml
 
+with open(os.path.join(os.path.dirname(__file__), '../config.yaml')) as c:
+    constants = yaml.load(c, Loader=yaml.FullLoader)
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
-file_handler = logging.FileHandler(os.path.join(os.path.dirname(__file__), constants.DEFAULT_LOGGING_PATH))
-formatter = logging.Formatter(constants.DEFAULT_LOGGING_FORMAT)
+file_handler = logging.FileHandler(os.path.join(os.path.dirname(__file__), constants['DEFAULT_LOGGING_PATH']))
+formatter = logging.Formatter(constants['DEFAULT_LOGGING_FORMAT'])
 file_handler.setFormatter(formatter)
 logger.addHandler(file_handler)
 
 
-def loader(file):
+def loader(file_or_url):
+    """
+    Accepts csv file or s3 url of NYC TLC dataset and returns dask dataframe
+    :param file_or_url: path of the csv file or the s3 URL
+    :return: a dask dataframe
+    """
     try:
         logger.info('start loading the data into dask dataframe')
-        data_df = dd.read_csv(file,
+        data_df = dd.read_csv(file_or_url,
                               dtype={'RatecodeID': 'float64', 'VendorID': 'float64', 'passenger_count': 'float64',
                                      'payment_type': 'float64'}, converters={'store_and_fwd_flag': convert_dtype},
-                              parse_dates=constants.DATE_FIELDS)
+                              parse_dates=constants['DATE_FIELDS'])
         logger.info('Finished loading the data into dask dataframe')
         return data_df
     except FileNotFoundError:
-        logger.exception('File not found: ' + file)
+        logger.exception('File not found: ' + file_or_url)
+        raise
+    except ValueError:
+        logger.exception('Invalid url: ' + file_or_url)
         raise
     except Exception as e:
         logger.exception('Dataset import failed: ' + str(e))
 
 
 def preprocess(df):
+    """
+    Accepts the loaded dask dataframe and returns the preprocessed dask dataframe
+    """
     try:
         logger.info('start preprocess the dataframe')
         df = df[(df['VendorID'].isin([1, 2])) & (df['tpep_pickup_datetime'] != 0) & (df['tpep_dropoff_datetime'] != 0)
                 & (df['passenger_count'] > 0) & (df['trip_distance'] > 0) & (df['RatecodeID'].isin([1, 2, 3, 4, 5, 6]))
                 & (df['store_and_fwd_flag'].isin(['Y', 'N'])) & (df['PULocationID'] > 0) & (df['DOLocationID'] > 0)
                 & (df['payment_type'].isin([1, 2, 3, 4, 5, 6])) & (df['total_amount'] > 0)
-                & df['tpep_pickup_datetime'].dt.year.isin(constants.DATASET_YEAR)]
-        df = df.dropna().astype(constants.SCHEMA)
+                & df['tpep_pickup_datetime'].dt.year.isin(constants['DATASET_YEAR'])]
+        df = df.dropna().astype(constants['SCHEMA'])
         logger.info('Finished preprocessing the dataframe')
         return df
     except Exception as e:
@@ -45,6 +58,10 @@ def preprocess(df):
 
 
 def convert_dtype(x):
+    """
+    Converter function for avoiding mixed dtype in columns warning while loading the input csv
+    with dask dataframe read_csv.
+    """
     if not x:
         return ''
     try:
@@ -53,11 +70,11 @@ def convert_dtype(x):
         return ''
 
 
-def avg_trip_length(df, month, year):
+def avg_trip_length(df, trip_month, trip_year):
     try:
         logging.info('calculate average trip length')
-        return df[(df.tpep_pickup_datetime.dt.month == month) &
-                  (df.tpep_pickup_datetime.dt.year == year)]['trip_distance'].mean().compute()
+        return df[(df.tpep_pickup_datetime.dt.month == trip_month) &
+                  (df.tpep_pickup_datetime.dt.year == trip_year)]['trip_distance'].mean().compute()
     except Exception as e:
         logger.exception('Calculation of average trip length failed: ' + str(e))
 
@@ -80,14 +97,20 @@ if __name__ == "__main__":
     logger.info('Initialize the data pipeline')
     progressbar = ProgressBar()
     progressbar.register()
-    filename = os.path.join(os.path.dirname(__file__), constants.DATASET_PATH)
-    dask_df = loader(filename)
-    dask_df = preprocess(dask_df)
     months = list(calendar.month_name)[1:]
-    for yr in constants.DATASET_YEAR:
-        for index, mon in enumerate(months):
-            print(f'The average trip length for {mon} {yr} is ' + str(avg_trip_length(dask_df, index + 1, yr)))
+    for year in constants['DATASET_YEAR']:
+        for index, month in enumerate(constants['DATASET_MONTH']):
+            s3_url = constants['DATASET_URL']
+            url = f'{s3_url}_{year}-{month}.csv'
+            dask_df = loader(url)
+            dask_df = preprocess(dask_df)
+            print(f'The avg trip length for {months[index]} {year} is ' + str(avg_trip_length(dask_df, index+1, year)))
+            print('The 45 rolling mean is ' + str(rolling_mean(dask_df)))
+            # comment/remove the break statement to calculate average trip length for all the months
             break
-    print('The 45 rolling mean is ' + str(rolling_mean(dask_df)))
     progressbar.unregister()
     logging.info('Data pipeline finished processing')
+
+
+
+
