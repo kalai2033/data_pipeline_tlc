@@ -1,4 +1,5 @@
 DEFAULT_LOGGING_PATH = '../tests/pipeline.log'
+TEST_LOGGING_PATH = '../tests/unittest.log'
 DEFAULT_LOGGING_FORMAT = '%(asctime)s : %(levelname)s : %(name)s : %(message)s'
 DATASET_PATH = '../data/yellow_tripdata_2021-**.csv'
 SCHEMA = {'trip_distance': 'float64', 'PULocationID': 'uint16', 'DOLocationID': 'uint16',
@@ -8,3 +9,5 @@ SCHEMA = {'trip_distance': 'float64', 'PULocationID': 'uint16', 'DOLocationID': 
           'VendorID': 'uint8', 'passenger_count': 'uint8', 'payment_type': 'uint8'}
 DATE_FIELDS = ['tpep_pickup_datetime', 'tpep_dropoff_datetime']
 DATASET_YEAR = [2021]
+TEST_DATA_FILENAME = '../data/yellow_tripdata_2021-01.csv'
+
