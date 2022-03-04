@@ -32,33 +32,33 @@ class TestDataPipeline(unittest.TestCase):
         logger.info('tearDown')
 
     def test_loader(self):
-        logger.info('test for loader method started')
+        logger.info('test for loader started')
         path = pl.Path(self.valid_path)
         self.assertTrue(path.is_file())
         with self.assertRaises(FileNotFoundError):
             dp.loader(self.invalid_path)
         self.assertIsInstance(self.valid_input, dd.DataFrame)
         self.assertIsNotNone(self.valid_input)
-        logger.info('test for loader method finished')
+        logger.info('test for loader finished')
 
     def test_preprocess(self):
-        logger.info('test for preprocess method started')
+        logger.info('test for preprocess started')
         self.assertIsNotNone(self.preprocessed_df)
         self.assertIsInstance(self.preprocessed_df, dd.DataFrame)
         self.assertEqual(len(self.preprocessed_df.columns), 18)
-        logger.info('test for preprocess method finished')
+        logger.info('test for preprocess finished')
 
     def test_avg_trip_length(self):
-        logger.info('test for avg_trip_length method started')
+        logger.info('test for avg_trip_length started')
         self.assertIsNotNone(self.avg_trip)
         self.assertIsInstance(self.avg_trip, float)
         self.assertEqual((round(self.avg_trip, 3)), 3.342)
-        logger.info('test for avg_trip_length method finished')
+        logger.info('test for avg_trip_length finished')
 
     def test_rolling_mean(self):
-        logger.info('test for rolling mean method started')
+        logger.info('test for rolling mean started')
         self.assertIsNotNone(self.rolling_mean)
-        logger.info('test for rolling mean method finished')
+        logger.info('test for rolling mean finished')
 
 
 if __name__ == '__main__':

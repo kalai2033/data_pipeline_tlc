@@ -72,7 +72,7 @@ def convert_dtype(x):
 
 def avg_trip_length(df, trip_month, trip_year):
     try:
-        logging.info('calculate average trip length')
+        logger.info('calculation of average trip length started')
         return df[(df.tpep_pickup_datetime.dt.month == trip_month) &
                   (df.tpep_pickup_datetime.dt.year == trip_year)]['trip_distance'].mean().compute()
     except Exception as e:
@@ -81,12 +81,12 @@ def avg_trip_length(df, trip_month, trip_year):
 
 def rolling_mean(df):
     try:
-        logging.info('calculation of rolling mean started')
+        logger.info('calculation of rolling mean started')
         rolling_df = df.compute()
         rolling_df = rolling_df.groupby(by=[rolling_df.tpep_pickup_datetime.dt.year,
                                             rolling_df.tpep_pickup_datetime.dt.month])['trip_distance'].rolling(
             45).mean().to_frame(name='Rolling_mean')
-        logging.info('Rolling mean calculation finished')
+        logger.info('Rolling mean calculation finished')
         return rolling_df.droplevel(0).reset_index()['Rolling_mean']
 
     except Exception as e:
@@ -109,7 +109,7 @@ if __name__ == "__main__":
             # comment/remove the break statement to calculate average trip length for all the months
             break
     progressbar.unregister()
-    logging.info('Data pipeline finished processing')
+    logger.info('Data pipeline finished processing')
 
 
 
