@@ -25,7 +25,7 @@ class TestDataPipeline(unittest.TestCase):
         cls.invalid_path = 'non_existent_file.csv'
         cls.preprocessed_df = dp.preprocess(cls.valid_input)
         cls.avg_trip = dp.avg_trip_length(cls.preprocessed_df, 1, 2021)
-        cls.rolling_mean = dp.rolling_mean(cls.preprocessed_df)
+        cls.rolling_mean = dp.rolling_mean(cls.preprocessed_df, 1, 2021)
 
     @classmethod
     def tearDownClass(cls):

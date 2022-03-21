@@ -79,10 +79,11 @@ def avg_trip_length(df, trip_month, trip_year):
         logger.exception('Calculation of average trip length failed: ' + str(e))
 
 
-def rolling_mean(df):
+def rolling_mean(df, trip_month, trip_year):
     try:
         logger.info('calculation of rolling mean started')
-        rolling_df = df.compute()
+        rolling_df = df[(df.tpep_pickup_datetime.dt.month == trip_month) &
+                        (df.tpep_pickup_datetime.dt.year == trip_year)].compute()
         rolling_df = rolling_df.groupby(by=[rolling_df.tpep_pickup_datetime.dt.year,
                                             rolling_df.tpep_pickup_datetime.dt.month])['trip_distance'].rolling(
             45).mean().to_frame(name='Rolling_mean')
@@ -105,7 +106,7 @@ if __name__ == "__main__":
             dask_df = loader(url)
             dask_df = preprocess(dask_df)
             print(f'The avg trip length for {months[index]} {year} is ' + str(avg_trip_length(dask_df, index+1, year)))
-            print('The 45 rolling mean is ' + str(rolling_mean(dask_df)))
+            print('The 45 rolling mean is ' + str(rolling_mean(dask_df, index+1, year)))
             # comment/remove the break statement to calculate average trip length for all the months
             break
     progressbar.unregister()
